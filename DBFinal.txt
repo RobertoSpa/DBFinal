@@ -186,6 +186,8 @@ INSERT INTO "itemPedido" (iped_int_qtd_produto,ped_cd_id,prod_cd_id,iped_dec_val
 		(3,11,7,6.9), 
 		(1,11,11,14.9),
 		(2,12,1,140.9); 
+
+
 	
 -- select 
 
@@ -201,6 +203,8 @@ select * from "itemPedido";
 
 update produto  set prod_int_qtde_estoque  = 40
 	where prod_cd_id  = 1;
+select prod_tx_nome ,prod_int_qtde_estoque
+from produto p ;
 
 -- comando delete
 
@@ -209,19 +213,19 @@ delete from "itemPedido"
 	
 -- comando juncao 
 
--- A
+-- A (Junção dos produtos com as categorias)
 
 select 
-    p.prod_tx_nome as "Nome", p.prod_tx_descricao as "Descriçâo", c.cat_tx_nome as "Categoria"
+    c.cat_tx_nome as "Categoria", p.prod_tx_nome as "Nome", p.prod_tx_descricao as "Descriçâo", c.cat_tx_nome as "Categoria"
 from 
     produto p 
 left join 
     categoria c 
 on 
     c.cat_cd_id = p.cat_cd_id;
-
+-- A (Junção dos número do pedido com nome do cliente)
 select 
-    p.ped_cd_id as "Id", p.ped_dt_data_do_pedido  as "Data Pedido", c.cli_tx_nome as "Cliente"
+    p.ped_cd_id as "Nº do Pedido", p.ped_dt_data_do_pedido  as "Data Pedido", c.cli_tx_nome as "Cliente"
 from 
     pedido p 
 left join
@@ -229,14 +233,17 @@ left join
 on
     p.cli_cd_id = c.cli_cd_id;
 
- -- B
-select count(p.cli_cd_id), p.cli_cd_id 
+ -- B ( Quantos pedidos cada cliente tem;
+   -- segundo select com relação nome x Id do cliente
+select count(p.cli_cd_id) as "Qde de pedidos", p.cli_cd_id as "Código do Cliente"
 from pedido p
 group by cli_cd_id
 order by cli_cd_id ;
 
+select cli_cd_id, cli_tx_nome 
+from cliente c ;
 
--- Nota Fiscal Pedido nº 1
+-- Nota Fiscal Pedido 1:12
 
 select
 	p.ped_cd_id as "Nº Pedido",
@@ -244,6 +251,7 @@ select
 	ip.iped_int_qtd_produto as "Quantidade",
 	ip.iped_dec_valor_produto  as "Valor",
 	c.cli_tx_nome as "Nome do Cliente",
+	c.cli_int_cpf as "CPF",
 	p.ped_dt_data_do_pedido as "Data do Pedido"
 from
 	pedido p
@@ -259,13 +267,13 @@ on
 where p.ped_cd_id = :idpedido	
 union all
 select
-	null, null, null, null, null, null	
+	null, null, null, null, null, null, null
 from
 	"itemPedido" ip
 where ip.ped_cd_id = :idpedido
 union all
 select
-	null, 'Total',null, SUM(iped_dec_valor_produto * iped_int_qtd_produto) as "Valor Total", null, null	
+	null, 'Total',null, SUM(iped_dec_valor_produto * iped_int_qtd_produto) as "Valor Total", null, null, null
 from
 	"itemPedido" ip
 where ip.ped_cd_id = :idpedido;
