@@ -159,6 +159,7 @@ values (1, 1,'2022-08-25'),
 	(12, 3,'2022-08-21');
 
 
+
 INSERT INTO "itemPedido" (iped_int_qtd_produto,ped_cd_id,prod_cd_id,iped_dec_valor_produto) 
 	VALUES (2,1,1,140.99),
 		(1,1,5,35.9),
@@ -187,7 +188,7 @@ INSERT INTO "itemPedido" (iped_int_qtd_produto,ped_cd_id,prod_cd_id,iped_dec_val
 		(1,11,11,14.9),
 		(2,12,1,140.9); 
 	
--- select 
+-- comando select 
 
 select * from categoria;
 select * from cliente;
@@ -207,6 +208,7 @@ update produto  set prod_int_qtde_estoque  = 40
 delete from "itemPedido"
 	where ped_cd_id=2 and prod_cd_id=12;
 	
+
 -- comando juncao 
 
 -- A
