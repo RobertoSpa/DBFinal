@@ -72,7 +72,7 @@ CREATE TABLE "itemPedido" (
   "iped_int_qtd_produto" int4 not null,
   "ped_cd_id" int4 not null,
   "prod_cd_id" int4 not null,
-  "prod_dec_valor_produto" decimal not null,
+  "iped_dec_valor_produto" decimal not null,
   PRIMARY KEY ("ped_cd_id", "prod_cd_id"),
   CONSTRAINT "FK_itemProduto.ped_cd_id"
     FOREIGN KEY ("ped_cd_id")
@@ -89,6 +89,7 @@ ALTER TABLE cliente ALTER COLUMN cli_tx_email TYPE varchar(60);
 ALTER TABLE categoria ALTER COLUMN cat_tx_descricao TYPE varchar(100);
 ALTER TABLE produto ALTER COLUMN prod_tx_nome TYPE varchar(50);
 ALTER TABLE produto ALTER COLUMN prod_tx_descricao TYPE varchar(300);
+ALTER TABLE produto ALTER COLUMN func_cd_id DROP NOT NULL;
 
 
 -- comando insert
@@ -111,8 +112,7 @@ values ('Manuela Natália Andreia Brito',21985867690, 'brito.manuela', 'manuela_
 	('Cláudia Heloise Cardoso',21991242750, 'cardoso.claudia', 'claudia-cardoso91@yogoothies.com.br', 15221713713,'1969-06-12', 5),
 	('Milena Sônia Sabrina Ribeiro',22992290799, 'ribeiro.milena', 'milena-ribeiro77@hoatmail.com', 68417913796,'1955-04-14', 6),
 	('Elisa Jennifer Natália Melo',22985366467, 'melo.elisa', 'elisa_jennifer_melo@protenisbarra.com.br', 38131387712,'1955-05-26', 7),
-	('Mirella Analu Oliveira',22991885230, 'oliveira.mirella', 'mirella_oliveira@me.com.br', 22823775757,'1947-07-12', 8);
-	; 
+	('Mirella Analu Oliveira',22991885230, 'oliveira.mirella', 'mirella_oliveira@me.com.br', 22823775757,'1947-07-12', 8); 
 	
 insert into categoria (cat_tx_nome, cat_tx_descricao)
 values ('Cães', 'Toda linha petshop para seu cão.'),
@@ -144,26 +144,25 @@ values ('Ração raças grandes','Ração para cães adultos de grande porte fra
 
 -- realizando pedidos nº 1:12
 
-insert into pedido (cli_cd_id, ped_dt_data_do_pedido)
-values (1,'2022-08-25'),
-	(3,'2022-05-30'),
-	(6,'2022-06-22'),
-	(7,'2022-06-23'),
-	(3,'2022-07-08'),
-	(7,'2022-07-14'),
-	(5,'2022-07-16'),
-	(4,'2022-07-21'),
-	(8,'2022-07-26'),
-	(1,'2022-07-28'),
-	(2,'2022-08-15'),
-	(3,'2022-08-21')
-;
+insert into pedido (ped_cd_id, cli_cd_id, ped_dt_data_do_pedido)
+values (1, 1,'2022-08-25'),
+	(2, 3,'2022-05-30'),
+	(3, 6,'2022-06-22'),
+	(4, 7,'2022-06-23'),
+	(5, 3,'2022-07-08'),
+	(6, 7,'2022-07-14'),
+	(7, 5,'2022-07-16'),
+	(8, 4,'2022-07-21'),
+	(9, 8,'2022-07-26'),
+	(10, 1,'2022-07-28'),
+	(11, 2,'2022-08-15'),
+	(12, 3,'2022-08-21');
 
 
-INSERT INTO "itemPedido" (ped_cd_id, prod_cd_id, prod_dec_valor_produto, iped_int_qtd_produto)
+INSERT INTO "itemPedido" (ped_cd_id, prod_cd_id, iped_dec_valor_produto, iped_int_qtd_produto)
 VALUES(1, 1, 140.99, 2), 
 	(1, 5, 35.90,1);
-INSERT INTO public."itemPedido" (iped_int_qtd_produto,ped_cd_id,prod_cd_id,prod_dec_valor_produto) 
+INSERT INTO "itemPedido" (iped_int_qtd_produto,ped_cd_id,prod_cd_id,iped_dec_valor_produto) 
 	VALUES (3,2,12,19.99),
 		(2,2,11,14.90), 
 		(2,2,5,35.90), 
@@ -188,9 +187,55 @@ INSERT INTO public."itemPedido" (iped_int_qtd_produto,ped_cd_id,prod_cd_id,prod_
 		(3,11,7,6.9), 
 		(1,11,11,14.9),
 		(2,12,1,140.9); 
+	
+-- select 
 
-select * from "itemPedido" ip
-where ped_cd_id = 1;
+select * from categoria;
+select * from cliente;
+select * from funcionario;
+select * from produto;
+select * from endereco;
+select * from pedido p ;
+select * from "itemPedido";
+
+-- comando update -- Atualizar estoque
+
+update produto  set prod_int_qtde_estoque  = 40
+	where prod_cd_id  = 1;
+
+-- comando delete
+
+delete from "itemPedido"
+	where ped_cd_id=2 and prod_cd_id=12;
+	
+-- juncao 
+
+-- A
+
+select 
+    p.prod_tx_nome as "Nome", p.prod_tx_descricao as "Descriçâo", c.cat_tx_nome as "Categoria"
+from 
+    produto p 
+left join 
+    categoria c 
+on 
+    c.cat_cd_id = p.cat_cd_id;
+
+select 
+    p.ped_cd_id as "Id", p.ped_dt_data_do_pedido  as "Data Pedido", c.cli_tx_nome as "Cliente"
+from 
+    pedido p 
+left join
+    cliente c 
+on
+    p.cli_cd_id = c.cli_cd_id;
+
+ -- B
+select count(p.cli_cd_id), p.cli_cd_id 
+from pedido p
+group by cli_cd_id
+order by cli_cd_id ;
+
 
 -- Nota Fiscal Pedido nº 1
 
@@ -198,7 +243,7 @@ select
 	p.ped_cd_id as "Nº Pedido",
 	prod.prod_tx_nome as "Produto",
 	ip.iped_int_qtd_produto as "Quantidade",
-	prod.prod_dec_valor_unitario as "Valor",
+	ip.iped_dec_valor_produto  as "Valor",
 	c.cli_tx_nome as "Nome do Cliente",
 	p.ped_dt_data_do_pedido as "Data do Pedido"
 from
@@ -221,11 +266,7 @@ from
 where ip.ped_cd_id = :idpedido
 union all
 select
-	null, 'Total',null, SUM(prod_dec_valor_produto * iped_int_qtd_produto) as "Valor Total", null, null	
+	null, 'Total',null, SUM(iped_dec_valor_produto * iped_int_qtd_produto) as "Valor Total", null, null	
 from
 	"itemPedido" ip
 where ip.ped_cd_id = :idpedido;
-
-
---BACKUP DATABASE DBFinal
---TO DISK = 'C:\Users\thais\bancodedados\DBFinal';
